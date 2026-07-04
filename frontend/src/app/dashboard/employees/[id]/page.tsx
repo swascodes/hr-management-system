@@ -100,7 +100,7 @@ export default function EmployeeDetailPage() {
       <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem', padding: '1.5rem 2rem' }}>
         <div style={{
           width: 80, height: 80, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+          background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'white', fontWeight: 700, fontSize: '1.5rem', flexShrink: 0,
         }}>

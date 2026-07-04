@@ -119,7 +119,7 @@ export default function EmployeesPage() {
               {/* Avatar */}
               <div style={{
                 width: 52, height: 52, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'white', fontWeight: 600, fontSize: '1rem',
                 flexShrink: 0,

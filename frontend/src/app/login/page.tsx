@@ -58,7 +58,7 @@ export default function LoginPage() {
             width: 56,
             height: 56,
             borderRadius: '0.75rem',
-            background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+            background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
             marginBottom: '1rem',
           }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

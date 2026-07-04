@@ -14,6 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isHere, setIsHere] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -26,10 +27,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (user) {
       loadNotifications();
-      const interval = setInterval(loadNotifications, 30000);
+      loadAttendance();
+      const interval = setInterval(() => {
+        loadNotifications();
+        loadAttendance();
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
+
+  const loadAttendance = async () => {
+    try {
+      const att = await api.get('/attendance/today');
+      if (att && att.checkedIn && !att.checkedOut) {
+        setIsHere(true);
+      } else {
+        setIsHere(false);
+      }
+    } catch {
+      setIsHere(false);
+    }
+  };
 
   const loadNotifications = async () => {
     try {
@@ -99,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <div style={{
                 width: 32, height: 32, borderRadius: '0.5rem',
-                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -109,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <span style={{ fontWeight: 700, fontSize: '1.125rem', color: '#0F172A' }}>
+              <span style={{ fontWeight: 700, fontSize: '1.125rem', color: 'var(--text-primary)' }}>
                 HR-Made Easy
               </span>
             </div>
@@ -220,14 +238,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={() => { setShowAvatarMenu(!showAvatarMenu); setShowNotifications(false); }}
                 style={{
                   width: 40, height: 40, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                  background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
                   color: 'white', fontWeight: 600, fontSize: '0.8125rem',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: 'none', cursor: 'pointer',
                   transition: 'box-shadow 0.15s ease',
+                  position: 'relative',
                 }}
               >
                 {initials}
+                {/* Status Dot */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: -2, right: -2,
+                  width: 14, height: 14,
+                  borderRadius: '50%',
+                  backgroundColor: isHere ? 'var(--success)' : 'var(--danger)',
+                  border: '3px solid white',
+                  boxShadow: '0 0 0 1px rgba(0,0,0,0.05)'
+                }} title={isHere ? "Present" : "Checked Out / Absent"} />
               </button>
 
               {showAvatarMenu && (
