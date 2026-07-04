@@ -16,7 +16,17 @@ export default function EmployeeDetailPage() {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<any>({});
   const [loading, setLoading] = useState(true);
-  const [salaryForm, setSalaryForm] = useState({ monthlyWage: 0, basicPercent: 50, hraPercent: 25, standardAllowancePercent: 16.67, performanceBonusPercent: 8.33, ltaPercent: 0, pfPercent: 12, professionalTax: 200, otherDeductions: 0 });
+  const [salaryForm, setSalaryForm] = useState({
+    monthlyWage: 0,
+    basicValue: 50, basicType: 'PERCENTAGE',
+    hraValue: 50, hraType: 'PERCENTAGE',
+    standardAllowanceValue: 4167, standardAllowanceType: 'FIXED',
+    performanceBonusValue: 8.33, performanceBonusType: 'PERCENTAGE',
+    ltaValue: 8.333, ltaType: 'PERCENTAGE',
+    pfValue: 12, pfType: 'PERCENTAGE',
+    professionalTaxValue: 200, professionalTaxType: 'FIXED',
+    otherDeductions: 0
+  });
 
   const isAdmin = user?.role === 'ADMIN';
   const isHR = user?.role === 'HR';
@@ -40,13 +50,13 @@ export default function EmployeeDetailPage() {
           if (sal) {
             setSalaryForm({
               monthlyWage: sal.monthlyWage,
-              basicPercent: sal.basicPercent,
-              hraPercent: sal.hraPercent,
-              standardAllowancePercent: sal.standardAllowancePercent,
-              performanceBonusPercent: sal.performanceBonusPercent,
-              ltaPercent: sal.ltaPercent,
-              pfPercent: sal.pfPercent,
-              professionalTax: sal.professionalTax,
+              basicValue: sal.basicValue, basicType: sal.basicType,
+              hraValue: sal.hraValue, hraType: sal.hraType,
+              standardAllowanceValue: sal.standardAllowanceValue, standardAllowanceType: sal.standardAllowanceType,
+              performanceBonusValue: sal.performanceBonusValue, performanceBonusType: sal.performanceBonusType,
+              ltaValue: sal.ltaValue, ltaType: sal.ltaType,
+              pfValue: sal.pfValue, pfType: sal.pfType,
+              professionalTaxValue: sal.professionalTaxValue, professionalTaxType: sal.professionalTaxType,
               otherDeductions: sal.otherDeductions,
             });
           }
@@ -166,17 +176,99 @@ export default function EmployeeDetailPage() {
             {isAdmin ? (
               <div>
                 <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Salary Configuration</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div><label className="label">Monthly Wage (₹)</label><input className="input" type="number" value={salaryForm.monthlyWage} onChange={e => setSalaryForm({...salaryForm, monthlyWage: +e.target.value})} /></div>
-                  <div><label className="label">Basic %</label><input className="input" type="number" step="0.01" value={salaryForm.basicPercent} onChange={e => setSalaryForm({...salaryForm, basicPercent: +e.target.value})} /></div>
-                  <div><label className="label">HRA %</label><input className="input" type="number" step="0.01" value={salaryForm.hraPercent} onChange={e => setSalaryForm({...salaryForm, hraPercent: +e.target.value})} /></div>
-                  <div><label className="label">Std Allowance %</label><input className="input" type="number" step="0.01" value={salaryForm.standardAllowancePercent} onChange={e => setSalaryForm({...salaryForm, standardAllowancePercent: +e.target.value})} /></div>
-                  <div><label className="label">Perf Bonus %</label><input className="input" type="number" step="0.01" value={salaryForm.performanceBonusPercent} onChange={e => setSalaryForm({...salaryForm, performanceBonusPercent: +e.target.value})} /></div>
-                  <div><label className="label">LTA %</label><input className="input" type="number" step="0.01" value={salaryForm.ltaPercent} onChange={e => setSalaryForm({...salaryForm, ltaPercent: +e.target.value})} /></div>
-                  <div><label className="label">PF %</label><input className="input" type="number" step="0.01" value={salaryForm.pfPercent} onChange={e => setSalaryForm({...salaryForm, pfPercent: +e.target.value})} /></div>
-                  <div><label className="label">Prof Tax (₹)</label><input className="input" type="number" value={salaryForm.professionalTax} onChange={e => setSalaryForm({...salaryForm, professionalTax: +e.target.value})} /></div>
-                  <div><label className="label">Other Ded (₹)</label><input className="input" type="number" value={salaryForm.otherDeductions} onChange={e => setSalaryForm({...salaryForm, otherDeductions: +e.target.value})} /></div>
+                
+                <div style={{ marginBottom: '1.5rem', maxWidth: '300px' }}>
+                  <label className="label">Monthly Wage (₹)</label>
+                  <input className="input" type="number" value={salaryForm.monthlyWage} onChange={e => setSalaryForm({...salaryForm, monthlyWage: +e.target.value})} />
                 </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                  {/* Basic */}
+                  <div>
+                    <label className="label">Basic Component</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.basicValue} onChange={e => setSalaryForm({...salaryForm, basicValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.basicType} onChange={e => setSalaryForm({...salaryForm, basicType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* HRA */}
+                  <div>
+                    <label className="label">HRA (Based on Basic)</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.hraValue} onChange={e => setSalaryForm({...salaryForm, hraValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.hraType} onChange={e => setSalaryForm({...salaryForm, hraType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Standard Allowance */}
+                  <div>
+                    <label className="label">Standard Allowance</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.standardAllowanceValue} onChange={e => setSalaryForm({...salaryForm, standardAllowanceValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.standardAllowanceType} onChange={e => setSalaryForm({...salaryForm, standardAllowanceType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Performance Bonus */}
+                  <div>
+                    <label className="label">Performance Bonus</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.performanceBonusValue} onChange={e => setSalaryForm({...salaryForm, performanceBonusValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.performanceBonusType} onChange={e => setSalaryForm({...salaryForm, performanceBonusType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* LTA */}
+                  <div>
+                    <label className="label">LTA</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.ltaValue} onChange={e => setSalaryForm({...salaryForm, ltaValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.ltaType} onChange={e => setSalaryForm({...salaryForm, ltaType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* PF */}
+                  <div>
+                    <label className="label">PF Deduction</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.pfValue} onChange={e => setSalaryForm({...salaryForm, pfValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.pfType} onChange={e => setSalaryForm({...salaryForm, pfType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Professional Tax */}
+                  <div>
+                    <label className="label">Professional Tax</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" step="0.01" value={salaryForm.professionalTaxValue} onChange={e => setSalaryForm({...salaryForm, professionalTaxValue: +e.target.value})} />
+                      <select className="input" value={salaryForm.professionalTaxType} onChange={e => setSalaryForm({...salaryForm, professionalTaxType: e.target.value})} style={{ width: '100px' }}>
+                        <option value="PERCENTAGE">%</option><option value="FIXED">₹</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Other Deductions */}
+                  <div>
+                    <label className="label">Other Deductions (₹)</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="input" type="number" value={salaryForm.otherDeductions} onChange={e => setSalaryForm({...salaryForm, otherDeductions: +e.target.value})} />
+                    </div>
+                  </div>
+                </div>
+
                 <button className="btn-primary" onClick={saveSalary}>Save Salary Structure</button>
               </div>
             ) : null}

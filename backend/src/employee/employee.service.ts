@@ -227,7 +227,10 @@ export class EmployeeService {
         throw new ForbiddenException('You can only edit your own profile');
       }
       // Only allow specific fields
-      const allowed = ['address', 'city', 'state', 'zipCode', 'country', 'phone', 'personalEmail', 'profilePicture'];
+      const allowed = [
+        'address', 'city', 'state', 'zipCode', 'country', 'phone', 'personalEmail', 'profilePicture',
+        'aboutMe', 'experience', 'skills', 'certifications', 'hobbies'
+      ];
       const filtered: any = {};
       for (const key of allowed) {
         if ((data as any)[key] !== undefined) {
@@ -238,9 +241,22 @@ export class EmployeeService {
     }
 
     // HR and Admin can edit most fields
-    const updateData: any = { ...data };
-    if (data.dateOfBirth) {
-      updateData.dateOfBirth = new Date(data.dateOfBirth);
+    const validFields = [
+      'firstName', 'lastName', 'email', 'phone', 'personalEmail', 'profilePicture',
+      'dateOfBirth', 'gender', 'maritalStatus', 'nationality', 'address', 'city',
+      'state', 'zipCode', 'country', 'aboutMe', 'experience', 'skills', 'certifications',
+      'hobbies', 'departmentId', 'designationId', 'managerId', 'workScheduleId', 'isActive'
+    ];
+    
+    const updateData: any = {};
+    for (const key of validFields) {
+      if ((data as any)[key] !== undefined) {
+        updateData[key] = (data as any)[key];
+      }
+    }
+
+    if (updateData.dateOfBirth) {
+      updateData.dateOfBirth = new Date(updateData.dateOfBirth);
     }
 
     return this.prisma.employee.update({

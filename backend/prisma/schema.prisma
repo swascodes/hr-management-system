@@ -239,21 +239,37 @@ model LeaveApprovalHistory {
 }
 
 model SalaryStructure {
-  id                  String  @id @default(uuid())
-  employeeId          String  @unique
-  monthlyWage         Float
-  basicPercent        Float   @default(50)
-  hraPercent          Float   @default(25)
-  standardAllowancePercent Float @default(16.67)
-  performanceBonusPercent  Float @default(8.33)
-  ltaPercent          Float   @default(0)
-  residualAllowance   Float   @default(0)
-  pfPercent           Float   @default(12)
-  professionalTax     Float   @default(200)
-  otherDeductions     Float   @default(0)
-  currency            String  @default("INR")
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                        String   @id @default(uuid())
+  employeeId                String   @unique
+  monthlyWage               Float
+  
+  basicValue                Float    @default(50)
+  basicType                 String   @default("PERCENTAGE")
+  
+  hraValue                  Float    @default(50) // % of basic
+  hraType                   String   @default("PERCENTAGE")
+  
+  standardAllowanceValue    Float    @default(4167)
+  standardAllowanceType     String   @default("FIXED")
+  
+  performanceBonusValue     Float    @default(8.33)
+  performanceBonusType      String   @default("PERCENTAGE")
+  
+  ltaValue                  Float    @default(8.333)
+  ltaType                   String   @default("PERCENTAGE")
+  
+  residualAllowance         Float    @default(0)
+  
+  pfValue                   Float    @default(12)
+  pfType                    String   @default("PERCENTAGE")
+  
+  professionalTaxValue      Float    @default(200)
+  professionalTaxType       String   @default("FIXED")
+  
+  otherDeductions           Float    @default(0)
+  currency                  String   @default("INR")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }

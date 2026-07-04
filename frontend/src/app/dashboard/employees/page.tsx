@@ -32,11 +32,11 @@ export default function EmployeesPage() {
     );
   });
 
-  const getStatusColor = (status?: string) => {
+  const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'PRESENT': return 'present';
-      case 'LEAVE': return 'leave';
-      default: return 'absent';
+      case 'PRESENT': return '🟢';
+      case 'LEAVE': return '✈️';
+      default: return '🟡';
     }
   };
 
@@ -106,8 +106,16 @@ export default function EmployeesPage() {
               key={emp.id}
               className="card card-hover"
               onClick={() => router.push(`/dashboard/employees/${emp.id}`)}
-              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}
+              style={{ cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}
             >
+              {/* Status Icon - Top Right */}
+              <div 
+                title={getStatusLabel(emp.attendanceStatus)}
+                style={{ position: 'absolute', top: '1rem', right: '1rem', fontSize: '1.25rem' }}
+              >
+                {getStatusIcon(emp.attendanceStatus)}
+              </div>
+
               {/* Avatar */}
               <div style={{
                 width: 52, height: 52, borderRadius: '50%',
@@ -129,8 +137,6 @@ export default function EmployeesPage() {
                   <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
                     {emp.firstName} {emp.lastName}
                   </span>
-                  <span className={`status-dot ${getStatusColor(emp.attendanceStatus)}`}
-                    title={getStatusLabel(emp.attendanceStatus)} />
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: '#64748B', marginTop: '0.125rem' }}>
                   {emp.designation?.name || 'No designation'}
@@ -139,11 +145,6 @@ export default function EmployeesPage() {
                   {emp.department?.name || 'No department'} · {emp.user?.loginId}
                 </div>
               </div>
-
-              {/* Arrow */}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2">
-                <path d="m9 18 6-6-6-6"/>
-              </svg>
             </div>
           ))}
         </div>

@@ -17,17 +17,7 @@ export class SalaryService {
 
   async configureSalary(
     employeeId: string,
-    data: {
-      monthlyWage: number;
-      basicPercent?: number;
-      hraPercent?: number;
-      standardAllowancePercent?: number;
-      performanceBonusPercent?: number;
-      ltaPercent?: number;
-      pfPercent?: number;
-      professionalTax?: number;
-      otherDeductions?: number;
-    },
+    data: any,
   ) {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
@@ -35,27 +25,37 @@ export class SalaryService {
 
     if (!employee) throw new NotFoundException('Employee not found');
 
-    const basicPercent = data.basicPercent ?? 50;
-    const hraPercent = data.hraPercent ?? 25;
-    const standardAllowancePercent = data.standardAllowancePercent ?? 16.67;
-    const performanceBonusPercent = data.performanceBonusPercent ?? 8.33;
-    const ltaPercent = data.ltaPercent ?? 0;
-    const totalPercent =
-      basicPercent + hraPercent + standardAllowancePercent + performanceBonusPercent + ltaPercent;
-    const residualPercent = 100 - totalPercent;
-    const residualAllowance =
-      Math.round((data.monthlyWage * residualPercent) / 100 * 100) / 100;
+    const wage = data.monthlyWage;
+    const calc = (value: number, type: string, base: number) => {
+      if (type === 'FIXED') return value;
+      return Math.round((base * value) / 100);
+    };
+
+    const basic = calc(data.basicValue ?? 50, data.basicType ?? 'PERCENTAGE', wage);
+    const hra = calc(data.hraValue ?? 50, data.hraType ?? 'PERCENTAGE', basic);
+    const stdAll = calc(data.standardAllowanceValue ?? 4167, data.standardAllowanceType ?? 'FIXED', wage);
+    const perfBon = calc(data.performanceBonusValue ?? 8.33, data.performanceBonusType ?? 'PERCENTAGE', wage);
+    const lta = calc(data.ltaValue ?? 8.333, data.ltaType ?? 'PERCENTAGE', wage);
+    
+    const residualAllowance = Math.max(0, wage - (basic + hra + stdAll + perfBon + lta));
 
     const salaryData = {
-      monthlyWage: data.monthlyWage,
-      basicPercent,
-      hraPercent,
-      standardAllowancePercent,
-      performanceBonusPercent,
-      ltaPercent,
-      residualAllowance: Math.max(0, residualAllowance),
-      pfPercent: data.pfPercent ?? 12,
-      professionalTax: data.professionalTax ?? 200,
+      monthlyWage: wage,
+      basicValue: data.basicValue ?? 50,
+      basicType: data.basicType ?? 'PERCENTAGE',
+      hraValue: data.hraValue ?? 50,
+      hraType: data.hraType ?? 'PERCENTAGE',
+      standardAllowanceValue: data.standardAllowanceValue ?? 4167,
+      standardAllowanceType: data.standardAllowanceType ?? 'FIXED',
+      performanceBonusValue: data.performanceBonusValue ?? 8.33,
+      performanceBonusType: data.performanceBonusType ?? 'PERCENTAGE',
+      ltaValue: data.ltaValue ?? 8.333,
+      ltaType: data.ltaType ?? 'PERCENTAGE',
+      residualAllowance,
+      pfValue: data.pfValue ?? 12,
+      pfType: data.pfType ?? 'PERCENTAGE',
+      professionalTaxValue: data.professionalTaxValue ?? 200,
+      professionalTaxType: data.professionalTaxType ?? 'FIXED',
       otherDeductions: data.otherDeductions ?? 0,
     };
 
@@ -71,37 +71,41 @@ export class SalaryService {
   private calculateBreakdown(structure: any) {
     const wage = structure.monthlyWage;
 
-    const basic = Math.round((wage * structure.basicPercent) / 100);
-    const hra = Math.round((wage * structure.hraPercent) / 100);
-    const standardAllowance = Math.round(
-      (wage * structure.standardAllowancePercent) / 100,
-    );
-    const performanceBonus = Math.round(
-      (wage * structure.performanceBonusPercent) / 100,
-    );
-    const lta = Math.round((wage * structure.ltaPercent) / 100);
-    const residual = structure.residualAllowance;
+    const calc = (value: number, type: string, base: number) => {
+      if (type === 'FIXED') return value;
+      return Math.round((base * value) / 100);
+    };
 
-    const grossSalary = basic + hra + standardAllowance + performanceBonus + lta + residual;
+    const basic = calc(structure.basicValue, structure.basicType, wage);
+    const hra = calc(structure.hraValue, structure.hraType, basic); // HRA is based on Basic
+    const standardAllowance = calc(structure.standardAllowanceValue, structure.standardAllowanceType, wage);
+    const performanceBonus = calc(structure.performanceBonusValue, structure.performanceBonusType, wage);
+    const lta = calc(structure.ltaValue, structure.ltaType, wage);
+    
+    const fixedAllowance = Math.max(0, wage - (basic + hra + standardAllowance + performanceBonus + lta));
+    const grossSalary = basic + hra + standardAllowance + performanceBonus + lta + fixedAllowance;
 
-    const pfDeduction = Math.round((basic * structure.pfPercent) / 100);
-    const totalDeductions =
-      pfDeduction + structure.professionalTax + structure.otherDeductions;
+    const pfDeduction = calc(structure.pfValue, structure.pfType, wage);
+    const professionalTax = calc(structure.professionalTaxValue, structure.professionalTaxType, wage);
+    const otherDeductions = structure.otherDeductions;
+
+    const totalDeductions = pfDeduction + professionalTax + otherDeductions;
     const netSalary = grossSalary - totalDeductions;
 
     return {
       ...structure,
+      residualAllowance: fixedAllowance,
       breakdown: {
         basic,
         hra,
         standardAllowance,
         performanceBonus,
         lta,
-        residualAllowance: residual,
+        residualAllowance: fixedAllowance,
         grossSalary,
         pfDeduction,
-        professionalTax: structure.professionalTax,
-        otherDeductions: structure.otherDeductions,
+        professionalTax,
+        otherDeductions,
         totalDeductions,
         netSalary,
       },
